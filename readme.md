@@ -18,14 +18,16 @@ Problem: Presentation Attack Detection (PAD) for audio, under two constraints th
 - [docs/literature.md](docs/literature.md) - source matrix and per-paper notes
 - [docs/features.md](docs/features.md) - what discriminates synthetic speech, and what survives a phone line
 - [docs/attack-side.md](docs/attack-side.md) - should we build the attack side? evidence and decision
+- **[slides/proposal.html](slides/proposal.html)** - the proposal deck ([live](https://claude.ai/code/artifact/8617113b-c43d-4fc1-8e10-ead79f141e3c))
 - [docs/presentation-plan.md](docs/presentation-plan.md) - proposal presentation: narrative, slides, group meeting agenda
 - `docs/pipeline.md` - proposed detection pipeline (Day 2)
 
 ## Open decisions
 
-- **Deployment point is unspecified.** Bank IVR (narrowband PSTN), telco, enterprise Teams/WhatsApp (wideband Opus), or victim-side app? Channel, latency budget and false-alarm tolerance all follow from this. Close this first.
+- ~~Deployment point~~ **DECIDED: on-device app on the callee's phone, listening to the live call.** Consequences: generous latency budget (human reads the alarm), false alarms cost more than misses, and an extra acoustic re-capture stage because Android will not hand call audio to a third-party app.
 - **Bandwidth as independent variable.** Rather than assuming one channel, report performance across the ladder: clean 16k, G.722/Opus wideband, a-law/mu-law 8k, GSM 13 kbps, AMR-NB/WB.
-- **Attack side scope.** See [docs/attack-side.md](docs/attack-side.md) §6: measurement study vs. training on modern attacks. Group must choose.
+- ~~Attack side scope~~ **DECIDED: Option A, measurement study.** See [docs/attack-side.md](docs/attack-side.md) §6.
+- ~~Alarm rule~~ **DECIDED: sequential evidence accumulation (SPRT-style cumulative LLR)** with raise/clear hysteresis and a 3 s evidence floor; `k`-of-`n` consecutive as the baseline comparator. Report false alarms per call-minute, detection rate, and time-to-detection (median, p90). Never report per-window error as the headline.
 - **Dataset.** ASVspoof 2021 LA is the primary candidate: real VoIP/PSTN transmission, 6 codecs, train-clean/test-degraded protocol. Open question is whether to add a second, non-VCTK source (e.g. In-the-Wild) given the cross-corpus generalization collapse documented in ASVspoof 2021 DF.
 - **Architecture family.** Ensemble systems win the benchmarks but conflict with the latency requirement. Needs an explicit accuracy/latency tradeoff study.
 - **Evaluation protocol.** EER and min t-DCF are utterance-level and offline. A streaming decision needs a per-window metric definition that does not yet exist in the benchmark literature.
