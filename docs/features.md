@@ -61,13 +61,35 @@ Short answer: **mostly no, and the reason is structural rather than incidental.*
 ### 4.1 Narrowband coding removes the band, it does not merely attenuate it
 G.711 (a-law, μ-law) and GSM operate at 8 kHz sampling, so Nyquist is 4 kHz and the usable PSTN passband is roughly 300 to 3400 Hz **[bg]**. If the artifact lives above 4 kHz it is not degraded, it is **absent**. No amount of model capacity recovers it.
 
+> **CORRECTION (added after evasion-literature review).** This paragraph is too strong and
+> the conclusion drawn from it was wrong. Two results overturn it:
+>
+> - Shim, Wang et al., *Low Pass Filtering and Bandwidth Extension for Robust Anti-spoofing
+>   Countermeasure Against Codec Variabilities* (arXiv:2211.06546): deliberately low-pass
+>   filtering to the telephone band **improves** codec robustness, up to 25% relative EER
+>   reduction. High-frequency bins overfit to the clean training condition.
+> - The F0 sub-band of the log-power spectrogram **alone** reaches 1.15% EER on
+>   ASVspoof 2019 LA (arXiv:2208.01214; arXiv:2308.09944).
+>
+> So narrowband does not leave nothing. What it leaves is **pitch and harmonic structure,
+> i.e. prosody**. This inverts the project's threat model: in the narrowband deployment we
+> actually target, the load-bearing feature is the prosodic one, which is precisely what
+> prosodic manipulation attacks. See [attack-side.md](attack-side.md).
+
 **[L1]** measures exactly this: narrowband C2/C3/C5/C6 are consistently worse than wideband C1/C4/C7, with the worst being C6 (GSM, 13 kbps) and C3 (uncontrolled PSTN transcoding).
 
 ### 4.2 Low-bitrate codecs are perceptual codecs, so they are artifact erasers by design
 A perceptual codec discards what humans cannot hear. The artifacts that distinguish vocoder output are, by hypothesis, in that same category **[hyp, consistent with L1/L4]**. The codec therefore removes the evidence as a side effect of doing its job well.
 
 ### 4.3 The channel adds its own synthesis artifacts, which is worse
-**GSM Full Rate is itself an LPC-based vocoder** (RPE-LTP), and Opus contains a linear-prediction mode (SILK) **[bg]**. So genuine human speech transmitted over GSM **has been vocoded**. The detector's core cue, "this waveform shows signs of parametric synthesis", becomes ambiguous: it is now true of bona fide speech too. This predicts a false-alarm problem on genuine callers, not only a miss problem on attacks. Neither paper isolates this, so it is a gap we could actually measure **[hyp]**.
+**GSM Full Rate is itself an LPC-based vocoder** (RPE-LTP), and Opus contains a linear-prediction mode (SILK) **[bg]**. So genuine human speech transmitted over GSM **has been vocoded**. The detector's core cue, "this waveform shows signs of parametric synthesis", becomes ambiguous: it is now true of bona fide speech too. This predicts a false-alarm problem on genuine callers, not only a miss problem on attacks. Neither of the two papers isolates this.
+
+> **CORRECTION / attribution.** This was marked as our own hypothesis. It is not. The
+> ASVspoof 2017 challenge overview (Wu et al., IEEE JSTSP) states the same concern
+> explicitly: genuine speech carried over a codec that is itself a vocoder may be scored as
+> spoofed. So the hypothesis is nine years old and belongs to the challenge organizers.
+> **It is, however, still unquantified**, which keeps it a live and cheap experiment for us.
+> Claim it as "predicted in 2017, never measured", not as our own idea.
 
 ### 4.4 Degradation is attack-selective, not a uniform tax
 **[L1]**: attack A18 (non-parallel VC) sits at roughly 0.4 median t-DCF uncoded, rises above 0.8 under PSTN and to about 0.7 under GSM, while other attacks move far less. **The channel preferentially hides the attacks that were already hardest.** Pooled metrics understate operational risk.
@@ -112,7 +134,7 @@ This is the framing of reading [2] (Ige et al., multi-layer adaptive framework) 
 
 Since the upper band is destroyed by the channel, the interesting question is **what discriminative information remains inside 300-3400 Hz and survives LPC-style coding**. Candidates, all **[hyp]**:
 
-1. **Prosodic and temporal cues**: F0 micro-variation, jitter and shimmer, rhythm and phrase timing. Low-frequency, so they survive narrowband. Caution: overlaps with the silence shortcut, so it must be validated with VAD-stripped audio.
+1. ~~**Prosodic and temporal cues**~~ **NO LONGER A HYPOTHESIS.** Confirmed: the F0 sub-band alone gives 1.15% EER, and low-pass filtering to telephone band improves codec robustness. Prosody is the surviving narrowband cue. The open question is now the opposite one: how easily an attacker manipulates it. See [attack-side.md](attack-side.md).
 2. **Long-horizon consistency** rather than fine spectral detail: does the speaker's channel signature and prosodic behaviour stay coherent across a 30 s call, and does an injected synthetic segment break that coherence.
 3. **Physiological residue**: breath intake, mouth noise, and lip smacks that TTS commonly omits, which sit largely below 4 kHz.
 4. **Codec-aware modelling**: give the model the codec identity, or train codec-conditional heads, instead of hoping augmentation averages it out.
