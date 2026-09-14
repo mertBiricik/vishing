@@ -14,7 +14,9 @@ Problem: Presentation Attack Detection (PAD) for audio, under two constraints th
 
 ## Documents
 
+- [docs/brief.md](docs/brief.md) - plain-English project brief, start here
 - [docs/literature.md](docs/literature.md) - source matrix and per-paper notes
+- [docs/features.md](docs/features.md) - what discriminates synthetic speech, and what survives a phone line
 - `docs/pipeline.md` - proposed detection pipeline (Day 2)
 
 ## Open decisions
