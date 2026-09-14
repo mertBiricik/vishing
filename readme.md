@@ -18,6 +18,7 @@ Problem: Presentation Attack Detection (PAD) for audio, under two constraints th
 - [docs/literature.md](docs/literature.md) - source matrix and per-paper notes
 - [docs/features.md](docs/features.md) - what discriminates synthetic speech, and what survives a phone line
 - [docs/attack-side.md](docs/attack-side.md) - should we build the attack side? evidence and decision
+- [docs/presentation-plan.md](docs/presentation-plan.md) - proposal presentation: narrative, slides, group meeting agenda
 - `docs/pipeline.md` - proposed detection pipeline (Day 2)
 
 ## Open decisions
