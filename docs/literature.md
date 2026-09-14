@@ -10,8 +10,9 @@ Target: 8–12 high-quality sources (peer-reviewed, challenge reports, standards
 | L1 | Liu et al., *ASVspoof 2021: Towards Spoofed and Deepfake Speech Detection in the Wild* | IEEE/ACM TASLP 2023 (10.1109/TASLP.2023.3285283) | ASVspoof 2021 LA / PA / DF | varied (raw waveform, LFCC, CQT, mel, linear FB) | varied (ResNet, LCNN, SENet, TDNN, GMM) | LA top systems near ASV floor; DF eval EER ≥15% for **all** 33 systems | **Yes** - real VoIP + PSTN, 6 codecs (LA); 3 media codecs + transcoding (DF) | **No** | Defines the benchmark, the degraded-channel protocol, and the generalization failure our project targets |
 | L2 | Li & Chen, *Where are we in audio deepfake detection? A systematic analysis over generative and detection models* | arXiv:2410.04324, 2024 | - | - | - | - | - | - | Given reading [1]; survey framing |
 | L3 | Ige, Kiekintveld & Piplai, *Deep Learning-Based Speech and Vision Synthesis to Improve Phishing Attack Detection through a Multi-layer Adaptive Framework* | arXiv:2402.17249, 2024 | - | - | - | - | - | - | Given reading [2]; multi-layer defense framing |
+| L4 | Müller, Czempin, Dieckmann, Froghyar & Böttinger, *Does Audio Deepfake Detection Generalize?* | Interspeech 2022 (arXiv:2203.16263) | train: ASVspoof19 LA train+dev; eval: ASVspoof19 LA eval + new **In-the-Wild** set (37.9 h, 58 speakers) | cqtspec / logspec / melspec / raw waveform | 12 architectures re-implemented (LCNN family, MesoNet, MesoInception, ResNet18, Transformer, LSTM, CRNNSpoof, RawNet2, RawPC, RawGAT-ST) | RawGAT-ST 1.23% EER in-domain vs. best 33.9% out-of-domain | Partial: found audio with media compression, **not** telephony | **No** | Quantifies cross-domain collapse, ranks front-ends, and measures the cost of fixed-length windows |
 
-*(rows L4+ to be added: RawNet2, AASIST, ASVspoof 5, In-the-Wild dataset, streaming/low-latency CM work, wav2vec2-based CMs)*
+*(rows L5+ to be added: AASIST, ASVspoof 5, wav2vec2/SSL-based CMs, streaming and low-latency CM work, Müller et al. 2021 silence study)*
 
 ---
 
@@ -95,3 +96,82 @@ Baselines: B01 CQCC-GMM, B02 LFCC-GMM, B03 LFCC-LCNN-LSTM, B04 RawNet2.
 
 ### Open items
 - Paper text reviewed here covers Sections I–IV. Sections V+ (limitations, roadmap, post-challenge results survey) still to be read - the roadmap section likely names successor work (ASVspoof 5) we should cite.
+
+---
+
+## L4 - Does Audio Deepfake Detection Generalize? (Müller et al., Interspeech 2022)
+
+### What it is
+Fraunhofer AISEC + TU Munich. Two contributions:
+
+1. A **controlled ablation**: twelve architectures from related work re-implemented and trained under one common protocol, so that performance can be attributed to architecture vs. front-end vs. input handling rather than to inconsistent tuning.
+2. A new **out-of-domain evaluation set, "In-the-Wild"**: 37.9 h of found audio from 58 English-speaking celebrities and politicians, 17.2 h spoofed and 20.7 h bona fide, average clip 4.3 s, 16 kHz. Fakes are segmented from 219 publicly available clips that advertise themselves as deepfakes; bona fide material is collected separately from podcasts and speeches by the same speakers. Published as an evaluation-only set.
+
+All models train on ASVspoof 2019 LA train+dev, matching standard practice.
+
+### Result 1: front-end choice dominates, and mel is the wrong scale
+Across every architecture, melspec is beaten by either cqtspec or logspec. Replacing melspec with cqtspec improves average performance by **37% EER, all other factors constant**.
+
+Reading: the mel scale compresses high-frequency resolution because it models human perception. Synthesis artifacts are not located where human hearing is most sensitive, so a perceptually motivated front-end discards exactly the evidence the task depends on.
+
+This is the same conclusion ASVspoof 2021 reaches from the opposite direction (narrowband conditions degrade CMs because high-frequency information is lost). Two independent lines of evidence, one claim: **discriminative information is concentrated in the upper band and in fine spectral detail.**
+
+### Result 2: raw waveform end-to-end models win in-domain
+Best ASVspoof19 eval EER by family (full-length input):
+
+| Model | Front-end | EER % | t-DCF |
+|---|---|---|---|
+| RawGAT-ST | raw | **1.23** | 0.036 |
+| RawPC | raw | 3.09 | 0.071 |
+| RawNet2 | raw | 3.15 | 0.078 |
+| LCNN-LSTM | cqtspec | 6.23 | 0.113 |
+| LCNN | cqtspec | 6.35 | 0.174 |
+| ResNet18 | cqtspec | 6.55 | 0.140 |
+
+Raw models use learnable band-pass (Sinc) layers and reach finer feature resolution than fixed spectrogram front-ends.
+
+### Result 3: fixed 4 s windows cost roughly half the performance in-domain
+
+| Input length | ASVspoof19 EER % | t-DCF | In-the-Wild EER % |
+|---|---|---|---|
+| Full | 9.85 | 0.22 | 60.10 |
+| 4 s | 18.89 | 0.39 | 67.25 |
+
+The authors recommend feeding unabridged audio and argue that work using fixed-length inputs sacrifices performance unnecessarily.
+
+**This conflicts directly with our real-time requirement**, and it is the single most important number for our project: it is a first estimate of the accuracy tax of streaming inference.
+
+**But the averaged table hides a reversal.** On In-the-Wild data several models do *better* with 4 s input than with full-length:
+
+| Model | Full EER % | 4 s EER % |
+|---|---|---|
+| RawNet2 (raw) | 37.82 | **33.94** |
+| CRNNSpoof (raw) | 44.50 | **41.71** |
+| Transformer (logspec) | 64.79 | **44.41** |
+| MesoInception (melspec) | 62.00 | **51.98** |
+
+The best In-the-Wild result in the entire paper is RawNet2 at **4 s**, not full length. So "longer is better" may be an artifact of ASVspoof, where full-length input also exposes more of the silence cue. Under domain shift the advantage partly disappears. **The latency tax may be far smaller in realistic conditions than Table 2 implies, and this is directly testable.** We should test it rather than inherit the paper's recommendation.
+
+### Result 4: the out-of-domain collapse
+EER degrades by roughly **200% to 1000%** on In-the-Wild data. Many models approach random guessing; several exceed 50% EER (LCNN logspec 4 s reaches 91.1%, i.e. systematically inverted, not merely uninformative, which indicates severe distribution shift rather than mere noise).
+
+Best In-the-Wild results are ~34-38% EER (RawNet2, RawGAT-ST, MesoInception logspec). For context, RawGAT-ST scores 1.23% in-domain and 37.15% out-of-domain on the same trained model.
+
+### Result 5: more in-domain data does not fix it
+Retraining the best In-the-Wild model (RawNet2, 4 s) on ASVspoof 2019 train+dev+eval gives 33.1 ± 0.2% EER, i.e. **no improvement**. All ASVspoof splits derive from the same VCTK source, so additional data adds no information relevant to real-world generalization.
+
+Implication: scaling the existing benchmark is not a path to field performance. Domain diversity is.
+
+### Critical caveats (for our evaluation section)
+- Re-implementations score 2-4% EER worse than originally published numbers; the authors state they did not tune hyperparameters. **Relative** comparisons are the contribution, absolute numbers are conservative.
+- **Selection bias in In-the-Wild fakes.** Clips were chosen because they *advertise* themselves as deepfakes, and the speakers "talk absurdly and out-of-character". That is a prosodic and semantic domain shift on top of the synthesis artifact, so "deepfake detection" is partly confounded with "unusual speech detection".
+- **Provenance asymmetry between classes.** Fake clips come from deepfake showcase videos, bona fide clips from podcasts and speeches, collected separately. Despite manual matching, channel and recording provenance may differ systematically between the two classes. This cuts both ways: it could inflate or deflate measured performance.
+- In-the-Wild is **not a telephony corpus**. Its degradation is media compression and heterogeneous recording, not narrowband coding. It tests corpus, speaker and attack generalization, **not** our channel.
+- Evaluation-only, 58 speakers, English only.
+- The paper's own reference [28] (Müller et al., *Speech is Silver, Silence is Golden*) is the silence-artifact study, corroborating the ASVspoof 2021 non-speech hidden-subset finding in L1. Worth citing directly.
+
+### How L1 and L4 divide the evaluation problem
+- **L1 (ASVspoof 2021 LA)** gives us the *channel* axis: real VoIP and PSTN, six codecs, controlled and balanced.
+- **L4 (In-the-Wild)** gives us the *domain* axis: unseen speakers, unseen attacks, unseen provenance.
+
+Neither covers the other. Using both, and reporting them separately rather than pooled, resolves the open dataset question in the project readme.
