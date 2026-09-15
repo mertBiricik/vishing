@@ -201,6 +201,17 @@ def table(s, x, y, w, h, headers, rows, widths, fsize=12):
     return gt
 
 
+
+def notes(s, text):
+    """Speaker notes. Presenter sees these, the audience does not."""
+    tf = s.notes_slide.notes_text_frame
+    tf.text = text.strip()
+    for par in tf.paragraphs:
+        for r in par.runs:
+            r.font.size = Pt(12)
+    return tf
+
+
 T = lambda t, c=INK2, b=False, m=False: (t, c, b, m)   # table/callout seg
 B = lambda t, c=INK2, b=False: (t, c, b)               # bullet seg
 
@@ -208,55 +219,67 @@ B = lambda t, c=INK2, b=False: (t, c, b)               # bullet seg
 # ============================================================ 1. COVER
 s = slide()
 rect(s, 0, 0, 0.16, H, fill=AMBER, line=None)
-tf = tb(s, M + 0.15, 1.45, 9.9, 2.2)
+tf = tb(s, M + 0.15, 1.55, 10.2, 2.2)
 p = para(tf, first=True, space_after=0, line=1.03)
-run(p, "Detecting Cloned Voices\non a Phone Call", 46, True, INK, DISP)
+run(p, "Detecting Cloned Voices\nGon a Phone Call".replace("\nG","\n"), 50, True, INK, DISP)
 
-rect(s, M + 0.15, 4.05, 0.03, 0.95, fill=AMBER, line=None)
-tf = tb(s, M + 0.42, 4.05, 8.6, 0.95)
+rect(s, M + 0.15, 4.25, 0.03, 0.95, fill=AMBER, line=None)
+tf = tb(s, M + 0.42, 4.25, 9.4, 0.95)
 p = para(tf, first=True, space_after=0, line=1.34)
-run(p, "Detectors score ", 16, False, INK2, BODY)
-run(p, "1.23%", 16, True, BLUE, MONO)
-run(p, " on their own benchmark and ", 16, False, INK2, BODY)
-run(p, "37%", 16, True, RED, MONO)
-run(p, " on someone else's.\nWe are building one that closes that gap.", 16, False, INK2, BODY)
+run(p, "1.23%", 19, True, BLUE, MONO)
+run(p, " on their own benchmark.   ", 19, False, INK2, BODY)
+run(p, "37%", 19, True, RED, MONO)
+run(p, " on someone else's.\nWe are building one that closes that gap.", 19, False, INK2, BODY)
 
-meta = [("Team", "[names]"), ("Runs on", "The callee's phone, during the call"),
-        ("Corpora", "ASVspoof 2019 LA, 2021 LA, In-the-Wild"), ("Date", "September 2026")]
-for i, (k, v) in enumerate(meta):
-    x = M + 0.15 + i * 3.02
-    tf = tb(s, x, 5.70, 2.85, 0.8)
-    p = para(tf, first=True, space_after=4)
-    run(p, k.upper(), 9.5, True, MUTED, MONO)
-    p = para(tf, space_after=0, line=1.2)
-    run(p, v, 12, False, INK2, BODY)
+tf = tb(s, M + 0.15, 6.10, 10, 0.4)
+p = para(tf, first=True, space_after=0)
+run(p, "[names]          September 2026", 12, False, MUTED, BODY)
 
 tf = tb(s, M + 0.15, 0.55, 8, 0.3)
 p = para(tf, first=True, space_after=0)
 run(p, "PROPOSAL", 11, True, AMBER, MONO)
 run(p, "     |     VISHING CHALLENGE 2026", 11, False, MUTED, MONO)
 
+notes(s, """
+Open with the framing. Do not read the slide.
+
+"Voice cloning is now good enough that a stranger can phone you in your daughter's voice. The
+detection research looks solved on paper. It is not. A published detector scores 1.23% error on
+its own benchmark and 37% on a different dataset, same model, same weights. We are building one
+that closes that gap, and we will prove it with cross-corpus evaluation rather than a single
+headline number."
+
+Deployment: an app on the callee's phone, listening during the call.
+Corpora: ASVspoof 2019 LA to train, 2021 LA for the channel, In-the-Wild for the corpus shift.
+""")
+
 
 # ============================================================ 2. THREAT
 s = slide()
 eyebrow(s, "Act 1", "The threat")
-title(s, [("Ninety seconds of public audio is enough.", INK)])
+title(s, [("Ninety seconds of audio is enough.", INK)])
 
-bullets(s, M, 2.35, 6.3, 2.8, [
-    [B("An attacker takes a voice from a podcast or a voicemail.")],
-    [B("A cloning model copies it. "), B("Minutes of work, no GPU farm.", INK, True)],
-    [B("The call reaches a family member, an employee, or a bank.")],
-    [B("The victim hears someone they know.")],
-], size=16, gap=15)
+bullets(s, M, 2.60, 6.6, 2.6, [
+    [B("A voice from a podcast or a voicemail.")],
+    [B("Cloned in minutes.", INK, True), B(" No GPU farm, no expertise.")],
+    [B("A call to a parent, an employee, or a bank.")],
+], size=20, gap=22)
 
-callout(s, 7.35, 2.35, W - M - 7.35, 2.10,
-        "The question this talk answers",
-        [T("A human hears a familiar voice and believes it. "),
-         T("Can a machine tell that it is synthetic?", RED, True)])
+callout(s, 7.85, 2.60, W - M - 7.85, 1.90,
+        "The question",
+        [T("Can a machine tell that it is synthetic?", RED, True)])
 
-foot(s, [("In a 472-person study, listeners reached 72.8% accuracy where a machine reached 95.5%. "
-          "People are the weaker detector.  ", MUTED, False),
-         ("arXiv:2107.09667", MUTED, True)])
+notes(s, """
+Tell it as a story. Thirty seconds, no statistics. Pick one example and stay in it.
+
+"You get a call. It is your mother's voice and she is upset. Ninety seconds of her speaking in
+public is all the attacker needed. A zero-shot cloning model does the rest in minutes, on a
+laptop, with no expertise."
+
+Then the pivot: people cannot catch this. In a 472-person study listeners reached 72.8% accuracy
+on ASVspoof attacks where a machine reached 95.5%. arXiv:2107.09667. The human is the weaker
+detector, which is the whole justification for building the machine one.
+""")
 
 
 # ============================================================ 3. STATE OF THE ART
@@ -264,21 +287,33 @@ s = slide()
 eyebrow(s, "Act 1", "Where the field stands")
 title(s, [("Excellent numbers, on ", INK), ("one dataset", BLUE), (".", INK)])
 
-cards = [("Best reported", "1.23%", BLUE, "RawGAT-ST, equal error rate on ASVspoof 2019 LA."),
-         ("Benchmark maturity", "4", INK, "ASVspoof challenges since 2015. 54 teams entered the 2021 evaluation."),
-         ("Architectures compared", "12", INK, "Re-implemented under one protocol. Raw-waveform models win.")]
+cards = [("Best reported", "1.23%", BLUE, "RawGAT-ST on ASVspoof 2019 LA"),
+         ("Challenges run", "4", INK, "ASVspoof, biennial since 2015"),
+         ("Architectures compared", "12", INK, "One protocol, raw waveform wins")]
 cw = (W - 2 * M - 2 * 0.34) / 3
 for i, (tag, big, col, body) in enumerate(cards):
     x = M + i * (cw + 0.34)
-    tf, _ = panel(s, x, 2.35, cw, 2.10, tag=tag)
-    p = para(tf, space_after=10, line=1.0)
-    run(p, big, 36, True, col, MONO)
+    tf, _ = panel(s, x, 2.50, cw, 1.95, tag=tag)
+    p = para(tf, space_after=12, line=1.0)
+    run(p, big, 44, True, col, MONO)
     p = para(tf, space_after=0, line=1.3)
-    run(p, body, 13, False, INK2, BODY)
+    run(p, body, 14, False, INK2, BODY)
 
-callout(s, M, 4.85, W - 2 * M, 1.45, "The catch",
-        [T("Every number here comes from the same corpus the model trained on. Change the dataset and they fall apart. "),
-         T("That is the problem we are fixing.", INK, True)])
+callout(s, M, 4.95, W - 2 * M, 1.30, "The catch",
+        [T("Every number here is measured on the corpus the model trained on.", INK, True)])
+
+notes(s, """
+Deliver this with confidence, as if you believe it. The reversal on the next slide lands harder
+if you sell this one first.
+
+Numbers: RawGAT-ST 1.23% EER, AASIST 0.71%. Four ASVspoof challenges since 2015, 54 teams in the
+2021 evaluation alone. Mueller et al. re-implemented twelve architectures under one protocol and
+raw-waveform models won consistently.
+
+Then the catch, slowly. Every one of those numbers is in-domain: train on ASVspoof, test on
+ASVspoof. Nobody is hiding it, that is just how the benchmark is built. What happens when you
+move off it is the next slide, and it is the reason this project exists.
+""")
 
 
 # ============================================================ 4. THE COLLAPSE
@@ -288,92 +323,122 @@ title(s, [("Move it off its own dataset and it ", INK), ("stops working", RED), 
 
 BX0, BX1 = 4.55, 12.05
 def bx(v): return BX0 + (BX1 - BX0) * v / 60.0
-BH = 0.32
+BH = 0.36
 
-# useless zone behind the bars
-rect(s, bx(50), 2.30, BX1 - bx(50), 1.72, fill=WASH_R, line=None)
-tf = tb(s, bx(50), 2.04, BX1 - bx(50), 0.24, align=PP_ALIGN.CENTER)
+rect(s, bx(50), 2.35, BX1 - bx(50), 1.90, fill=WASH_R, line=None)
+tf = tb(s, bx(50), 2.08, BX1 - bx(50), 0.24, align=PP_ALIGN.CENTER)
 p = para(tf, first=True, space_after=0)
-run(p, "COIN FLIP", 9.5, True, RED, MONO)
+run(p, "COIN FLIP", 10, True, RED, MONO)
 
-tf = tb(s, M, 2.04, 3.6, 0.26)
+tf = tb(s, M, 2.08, 3.8, 0.26)
 p = para(tf, first=True, space_after=0)
-run(p, "TRAINED ON ASVSPOOF 2019, THEN TESTED ON:", 9.5, True, MUTED, MONO)
+run(p, "TRAINED ON ASVSPOOF 2019, TESTED ON:", 10, True, MUTED, MONO)
 
-bars = [("its own test set", "", 1.23, BLUE, 2.42),
-        ("another corpus", "In-the-Wild, new speakers", 37.15, RED, 2.98),
-        ("2026 cloned voices", "over a real VoIP call", 50.28, RED, 3.54)]
+bars = [("its own test set", "", 1.23, BLUE, 2.46),
+        ("another corpus", "In-the-Wild", 37.15, RED, 3.06),
+        ("2026 cloned voices", "over a real VoIP call", 50.28, RED, 3.66)]
 for label, sub, val, col, y in bars:
-    tf = tb(s, M, y + 0.01, 3.6, 0.5)
+    tf = tb(s, M, y + 0.01, 3.7, 0.5)
     p = para(tf, first=True, space_after=1)
-    run(p, label, 14, True, INK, BODY)
+    run(p, label, 15, True, INK, BODY)
     if sub:
         p = para(tf, space_after=0)
-        run(p, sub, 9.5, False, MUTED, MONO)
+        run(p, sub, 10, False, MUTED, MONO)
     rect(s, BX0, y, max(bx(val) - BX0, 0.03), BH, fill=col, line=None)
     if val >= 45:
-        tf = tb(s, bx(val) - 1.25, y + 0.03, 1.1, 0.3, align=PP_ALIGN.RIGHT)
+        tf = tb(s, bx(val) - 1.30, y + 0.04, 1.15, 0.3, align=PP_ALIGN.RIGHT)
         p = para(tf, first=True, space_after=0)
-        run(p, f"{val}%", 17, True, WHITE, MONO)
+        run(p, "{}%".format(val), 18, True, WHITE, MONO)
     else:
-        tf = tb(s, bx(val) + 0.16, y + 0.02, 1.4, 0.3)
+        tf = tb(s, bx(val) + 0.16, y + 0.03, 1.4, 0.3)
         p = para(tf, first=True, space_after=0)
-        run(p, f"{val}%", 17, True, col, MONO)
+        run(p, "{}%".format(val), 18, True, col, MONO)
 
-# the fix, set apart
-line(s, M, 4.22, BX1, 4.22, color=RULE, lw=1.0)
-tf = tb(s, M, 4.34, 3.6, 0.5)
+line(s, M, 4.38, BX1, 4.38, color=RULE, lw=1.0)
+tf = tb(s, M, 4.52, 3.7, 0.5)
 p = para(tf, first=True, space_after=1)
-run(p, "same test, retrained", 14, True, BLUE, BODY)
+run(p, "same test, retrained", 15, True, BLUE, BODY)
 p = para(tf, space_after=0)
-run(p, "on modern voices", 9.5, False, MUTED, MONO)
-rect(s, BX0, 4.33, bx(5.81) - BX0, BH, fill=BLUE, line=None)
-tf = tb(s, bx(5.81) + 0.16, 4.35, 2.6, 0.3)
+run(p, "on modern voices", 10, False, MUTED, MONO)
+rect(s, BX0, 4.51, bx(5.81) - BX0, BH, fill=BLUE, line=None)
+tf = tb(s, bx(5.81) + 0.16, 4.54, 3.4, 0.3)
 p = para(tf, first=True, space_after=0)
-run(p, "5.81%", 17, True, BLUE, MONO)
-run(p, "    the problem is fixable", 12, False, MUTED, BODY)
+run(p, "5.81%", 18, True, BLUE, MONO)
+run(p, "    so it can be fixed", 14, False, MUTED, BODY)
 
-line(s, BX0, 4.80, BX1, 4.80, color=RULE, lw=1.0)
+line(s, BX0, 5.04, BX1, 5.04, color=RULE, lw=1.0)
 for tick in (0, 15, 30, 45, 60):
-    tf = tb(s, bx(tick) - 0.4, 4.86, 0.8, 0.24, align=PP_ALIGN.CENTER)
+    tf = tb(s, bx(tick) - 0.4, 5.10, 0.8, 0.24, align=PP_ALIGN.CENTER)
     p = para(tf, first=True, space_after=0)
-    run(p, f"{tick}%", 10, False, MUTED, MONO)
-tf = tb(s, M, 4.86, 3.6, 0.24)
+    run(p, "{}%".format(tick), 10, False, MUTED, MONO)
+tf = tb(s, M, 5.10, 3.7, 0.24)
 p = para(tf, first=True, space_after=0)
-run(p, "equal error rate, lower is better", 9.5, False, MUTED, MONO)
+run(p, "equal error rate, lower is better", 10, False, MUTED, MONO)
 
-callout(s, M, 5.42, W - 2 * M, 1.12, "The gap is the target",
-        [T("A detector at 1% and 37% has a 36-point gap. "),
-         T("Closing that gap is the job.", INK, True),
-         T(" More ASVspoof data will not do it: 33.9% to 33.1%, because every split comes from the same recordings.")],
+callout(s, M, 5.62, W - 2 * M, 0.95, "",
+        [T("A 36-point gap. ", INK, True), T("Closing it is the job.", BLUE, True)],
         color=BLUE, wash=WASH_B)
+
+notes(s, """
+This is the slide the talk turns on. Take three minutes. Walk the bars top to bottom.
+
+Bar 1: RawGAT-ST, 1.23% EER on ASVspoof 2019 LA eval. The published number.
+Bar 2: the SAME model, same weights, nothing retrained, tested on In-the-Wild, a corpus of found
+celebrity audio. 37.15%. Say "same weights" out loud, that is the point.
+Bar 3: an ASVspoof-trained detector against 2026 cloned voices over a real VoIP call. 50.28%,
+a coin flip. Source is RTCFake, a recent preprint. Say "a recent preprint reports". Do not
+present it as settled.
+
+Then the blue bar: train the same architecture on modern voices instead and it drops to 5.81%.
+So this is not a law of nature, it is a training problem. That is why the project is worth doing.
+
+If asked about more data: measured, does not help, 33.9% to 33.1%. Every ASVspoof split derives
+from the same VCTK recordings, so more of it adds no new domain.
+
+EER means equal error rate. 50% is random guessing.
+""")
 
 
 # ============================================================ 5. DIAGNOSIS
 s = slide()
 eyebrow(s, "Act 2", "Why it collapses")
-title(s, [("The detector learns the ", INK), ("dataset", RED), (", not the voice.", INK)])
+title(s, [("It learns the ", INK), ("dataset", RED), (", not the voice.", INK)])
 
-cards = [("Silence alone", "85%", "Accuracy from a classifier given ", "only the length of the opening silence",
-          ".", "Müller et al."),
-         ("Attack on silence only", "82.2%", "Attack success from changing ", "only the background noise and the silence",
-          ", never the voice.", "SiFDetectCracker, ACM MM 2023"),
-         ("Where it looks", "0.5–0.6 kHz", "SHAP analysis: the model attends to ", "the gaps between words",
-          " and one narrow low band.", "arXiv:2110.03309")]
-for i, (tag, big, a, bld, c, cite) in enumerate(cards):
+cards = [("Silence alone", "85%", "accuracy from the length of the opening silence"),
+         ("Attack on silence only", "82.2%", "success without ever touching the voice"),
+         ("Where it looks", "0.5-0.6 kHz", "the gaps between words, one narrow band")]
+for i, (tag, big, body) in enumerate(cards):
     x = M + i * (cw + 0.34)
-    tf, _ = panel(s, x, 2.35, cw, 2.30, tag=tag)
-    p = para(tf, space_after=9, line=1.0)
-    run(p, big, 30, True, RED, MONO)
-    p = para(tf, space_after=6, line=1.3)
-    run(p, a, 13, False, INK2, BODY); run(p, bld, 13, True, INK, BODY); run(p, c, 13, False, INK2, BODY)
-    p = para(tf, space_after=0)
-    run(p, cite, 9.5, False, MUTED, MONO)
+    tf, _ = panel(s, x, 2.50, cw, 2.05, tag=tag)
+    p = para(tf, space_after=12, line=1.0)
+    run(p, big, 38, True, RED, MONO)
+    p = para(tf, space_after=0, line=1.32)
+    run(p, body, 14, False, INK2, BODY)
 
-callout(s, M, 5.05, W - 2 * M, 1.35, "Which tells us what to fix",
-        [T("The model wins on things that belong to the corpus, not to the speech. "),
-         T("All of them can be taken away during training.", INK, True)],
+callout(s, M, 5.05, W - 2 * M, 1.25, "Which tells us what to fix",
+        [T("It wins on what belongs to the corpus, not the speech. "),
+         T("All of it can be taken away in training.", INK, True)],
         color=BLUE, wash=WASH_B)
+
+notes(s, """
+Three findings, one conclusion. Do not read the cards, explain each in a sentence.
+
+1. Mueller et al. trained a classifier on nothing but the DURATION of the silence at the start of
+   the clip. 85% accuracy, 15.1% EER. In ASVspoof, real recordings have longer leading silence
+   than fake ones, so silence length leaks the label.
+2. SiFDetectCracker, ACM MM 2023. A black-box attack that changes only the background noise and
+   the mute segments and never touches the speech. 82.2% success against RawNet2, RawGAT-ST and
+   others.
+3. SHAP analysis, arXiv:2110.03309. The classifier attends to non-speech intervals and one narrow
+   band around 0.5 to 0.6 kHz.
+
+Conclusion, say it out loud: the model is winning on properties of the corpus, not properties of
+the voice. That is exactly why it does not travel. And it is good news, because every one of
+those cues can be removed during training. Slide 7 is how.
+
+If asked: yes, a chunk of published performance is a dataset artifact, an attacker can strip the
+silence trivially, and a live phone call has no clean studio silence anyway.
+""")
 
 
 # ============================================================ 6. CHANNEL
@@ -387,34 +452,52 @@ def fx(hz):
     lo, hi = math.log10(50), math.log10(20000)
     return AX0 + (AX1 - AX0) * (math.log10(hz) - lo) / (hi - lo)
 
-rect(s, fx(80), 2.15, fx(300) - fx(80), 1.62, fill=WASH_B, line=None)
-rect(s, fx(4000), 2.15, AX1 - fx(4000), 1.62, fill=WASH_R, line=None)
-tf = tb(s, (fx(80) + fx(300)) / 2 - 0.95, 1.90, 1.9, 0.22, align=PP_ALIGN.CENTER)
-p = para(tf, first=True, space_after=0); run(p, "PITCH", 9.5, True, BLUE, MONO)
-tf = tb(s, (fx(4000) + AX1) / 2 - 1.3, 1.90, 2.6, 0.22, align=PP_ALIGN.CENTER)
-p = para(tf, first=True, space_after=0); run(p, "SYNTHESIS ARTIFACT", 9.5, True, RED, MONO)
+rect(s, fx(80), 2.45, fx(300) - fx(80), 1.80, fill=WASH_B, line=None)
+rect(s, fx(4000), 2.45, AX1 - fx(4000), 1.80, fill=WASH_R, line=None)
+tf = tb(s, (fx(80) + fx(300)) / 2 - 0.95, 2.18, 1.9, 0.24, align=PP_ALIGN.CENTER)
+p = para(tf, first=True, space_after=0); run(p, "PITCH", 10, True, BLUE, MONO)
+tf = tb(s, (fx(4000) + AX1) / 2 - 1.3, 2.18, 2.6, 0.24, align=PP_ALIGN.CENTER)
+p = para(tf, first=True, space_after=0); run(p, "SYNTHESIS ARTIFACT", 10, True, RED, MONO)
 
-bands = [("Opus / WhatsApp", 50, 20000, BLUE, 2.32),
-         ("AMR-WB / VoLTE", 50, 7000, BLUE, 2.85),
-         ("G.711 / GSM", 300, 3400, RED, 3.38)]
+bands = [("Opus / WhatsApp", 50, 20000, BLUE, 2.62),
+         ("AMR-WB / VoLTE", 50, 7000, BLUE, 3.20),
+         ("G.711 / GSM", 300, 3400, RED, 3.78)]
 for name, lo, hi, col, y in bands:
-    tf = tb(s, M, y + 0.02, 2.5, 0.3)
-    p = para(tf, first=True, space_after=0); run(p, name, 13, True, INK, BODY)
-    rect(s, fx(lo), y, fx(hi) - fx(lo), 0.22, fill=col, line=None)
+    tf = tb(s, M, y + 0.01, 2.5, 0.3)
+    p = para(tf, first=True, space_after=0); run(p, name, 15, True, INK, BODY)
+    rect(s, fx(lo), y, fx(hi) - fx(lo), 0.26, fill=col, line=None)
 
-line(s, AX0, 3.80, AX1, 3.80, color=RULE, lw=1.0)
+line(s, AX0, 4.28, AX1, 4.28, color=RULE, lw=1.0)
 for hz, lbl in [(50, "50"), (300, "300"), (3400, "3.4k"), (7000, "7k"), (20000, "20k Hz")]:
-    tf = tb(s, fx(hz) - 0.45, 3.86, 0.9, 0.24, align=PP_ALIGN.CENTER)
+    tf = tb(s, fx(hz) - 0.45, 4.34, 0.9, 0.24, align=PP_ALIGN.CENTER)
     p = para(tf, first=True, space_after=0); run(p, lbl, 10, False, MUTED, MONO)
 
-callout(s, M, 4.55, W - 2 * M, 1.55, "Good news for the design",
-        [T("A phone line throws away the top of the spectrum, where the synthesis artifact lives. "
-           "But low-passing to the telephone band "),
-         T("improves", BLUE, True),
-         T(" codec robustness by about 25% relative, because the high bins are what overfit. And the "),
-         T("pitch band alone reaches 1.15% EER", BLUE, True),
-         T(". The band the phone keeps is a band we can build on.")],
+callout(s, M, 4.95, W - 2 * M, 1.35, "Good news",
+        [T("The phone keeps the pitch band. "),
+         T("The pitch band alone reaches 1.15% EER.", BLUE, True)],
         color=BLUE, wash=WASH_B)
+
+notes(s, """
+Point at the bars as you talk. The picture does the work.
+
+The synthesis artifact lives at the top of the spectrum, above roughly 4 kHz. A WhatsApp or Teams
+call over Opus keeps all of it. A VoLTE call over AMR-WB keeps most. A normal phone call through
+G.711 or GSM keeps only 300 to 3400 Hz, so the artifact is not damaged, it is gone.
+
+That sounds fatal. We assumed it was. It is not, for two reasons:
+
+1. Shim and Wang, arXiv:2211.06546. Deliberately low-passing to the telephone band IMPROVES codec
+   robustness by about 25% relative, because the high-frequency bins are the ones that overfit to
+   the clean training condition.
+2. The F0 sub-band of the log-power spectrogram ALONE reaches 1.15% EER on ASVspoof 2019 LA.
+   arXiv:2208.01214.
+
+So the band the phone keeps is a band we can build on. That is a design decision, not a
+consolation prize.
+
+Caveat if pressed: this also means prosody is the load-bearing feature in narrowband, and prosody
+is manipulable by an attacker. We know. It is in the report's limitations.
+""")
 
 
 # ============================================================ 7. HOW WE BUILD IT
@@ -422,24 +505,46 @@ s = slide()
 eyebrow(s, "Act 3", "Our approach")
 title(s, [("How you build a detector that ", INK), ("travels", BLUE), (".", INK)])
 
-table(s, M, 2.30, W - 2 * M, 3.4,
-      ["Design decision", "Why"],
+table(s, M, 2.50, W - 2 * M, 3.1,
+      ["Design decision", "Evidence"],
       [[[T("Codec and channel augmentation", INK, True)],
-        [T("Every top-5 system in ASVspoof 2021 used it. No counterexample.")]],
+        [T("every top-5 system in 2021 used it", INK2, False, True)]],
        [[T("Raw waveform or CQT, never mel", INK, True)],
-        [T("Mel is 37% worse on average, all else equal. It throws away the resolution the task needs.")]],
+        [T("mel is 37% worse", INK2, False, True)]],
        [[T("Silence masking, VAD-trimmed training", INK, True)],
-        [T("Takes away the cue that carries 85% of the decision.")]],
+        [T("removes the cue worth 85%", INK2, False, True)]],
        [[T("Low-pass to the telephone band", INK, True)],
-        [T("Costs high frequencies, buys 25% relative EER under codec shift. We test it, not assume it.")]],
+        [T("25% better under codec shift", INK2, False, True)]],
        [[T("SSL front-end (wav2vec2)", INK, True)],
-        [T("The most robust under attack: 1.89% to 11.6%, where SSNET goes to 61.81%. Also the heaviest.")]],
+        [T("1.89% to 11.6% under attack, but heavy", INK2, False, True)]],
        [[T("One-class objective", INK, True)],
-        [T("Learns what real speech is, instead of which attacks we happened to see.")]]],
-      widths=[4.0, 7.89], fsize=12.5)
+        [T("learns real speech, not known attacks", INK2, False, True)]]],
+      widths=[6.0, 5.89], fsize=14)
 
-foot(s, [("None of these is new on its own. The work is making them hold against both shifts at once, "
-          "corpus and channel.", MUTED, False)])
+foot(s, [("None of these is new on its own. The work is making them hold against both shifts at once.", MUTED, False)])
+
+notes(s, """
+The "what are you actually going to do" slide. One sentence per row.
+
+1. Codec and channel augmentation. Every top-5 system in ASVspoof 2021 used data augmentation and
+   every top-5 deepfake-track system used codec augmentation specifically. No counterexample in
+   the literature. The least controversial thing we will do.
+2. Front-end. Swapping mel for CQT improves average EER by 37% with everything else held constant.
+   Mel compresses high-frequency resolution because it models human hearing, and the artifact is
+   not where human hearing is sensitive.
+3. Silence masking and VAD-trimmed training. Directly removes the shortcut from slide 5. Proposed
+   as mitigation by Zhang et al., TASLP 2023. As far as we found, nobody has combined it with
+   channel robustness, which is what we will do.
+4. Telephone-band low-pass, from the previous slide. We test it as a condition, we do not assume it.
+5. wav2vec2 / SSL front-end. The most robust model under the Kassis attack by a wide margin,
+   1.89% to 11.6%, where SSNET goes to 61.81%. Also the heaviest, and the phone has to run it, so
+   we measure what it costs in latency.
+6. One-class objective. Model what bona fide speech is, instead of memorising which attacks we
+   happened to see. The standard answer to unseen-attack generalisation.
+
+Be honest in the closing line: none of these is novel alone. The contribution is combining them
+against corpus shift and channel shift at the same time, and measuring the result properly.
+""")
 
 
 # ============================================================ 8. HOW WE PROVE IT
@@ -448,28 +553,45 @@ eyebrow(s, "Act 3", "How we measure it")
 title(s, [("The only number that matters is the ", INK), ("gap", BLUE), (".", INK)])
 
 hw = (W - 2 * M - 0.34) / 2
-tf, _ = panel(s, M, 2.35, hw, 2.35, tag="Train")
-p = para(tf, space_after=10, line=1.3)
-run(p, "ASVspoof 2019 LA", 13.5, True, INK, BODY)
-run(p, ", clean, with our augmentation on top. 25,380 utterances.", 13.5, False, INK2, BODY)
-p = para(tf, space_after=0, line=1.3)
-run(p, "We hold out one attack family, so unseen attacks are measured before we touch another corpus.", 13.5, False, INK2, BODY)
+tf, _ = panel(s, M, 2.50, hw, 2.05, tag="Train")
+p = para(tf, space_after=12, line=1.32)
+run(p, "ASVspoof 2019 LA, clean.", 16, True, INK, BODY)
+p = para(tf, space_after=0, line=1.32)
+run(p, "One attack family held out.", 16, False, INK2, BODY)
 
-tf, _ = panel(s, M + hw + 0.34, 2.35, hw, 2.35, tag="Test")
-p = para(tf, space_after=10, line=1.3)
-run(p, "ASVspoof 2021 LA ", 13.5, True, INK, BODY)
-run(p, "for the channel. Real VoIP and PSTN, seven codecs, ", 13.5, False, INK2, BODY)
-run(p, "25,938", 13.5, True, INK, MONO)
-run(p, " trials each.", 13.5, False, INK2, BODY)
-p = para(tf, space_after=0, line=1.3)
-run(p, "In-the-Wild ", 13.5, True, INK, BODY)
-run(p, "for the corpus. New speakers, new attacks, new recordings. 31,779 clips.", 13.5, False, INK2, BODY)
+tf, _ = panel(s, M + hw + 0.34, 2.50, hw, 2.05, tag="Test")
+p = para(tf, space_after=12, line=1.32)
+run(p, "ASVspoof 2021 LA", 16, True, INK, BODY)
+run(p, "   for the channel", 16, False, INK2, BODY)
+p = para(tf, space_after=0, line=1.32)
+run(p, "In-the-Wild", 16, True, INK, BODY)
+run(p, "   for the corpus", 16, False, INK2, BODY)
 
-callout(s, M, 4.95, W - 2 * M, 1.42, "Our headline metric",
-        [T("gap  =  out-of-domain EER  −  in-domain EER", INK, True, True),
-         T("\nA detector at 1% and 37% has a 36-point gap. We report all three, per codec and per corpus, "
-           "never averaged together. The gap is what we optimise.")],
+callout(s, M, 4.90, W - 2 * M, 1.40, "Our headline metric",
+        [T("gap  =  out-of-domain EER  -  in-domain EER", INK, True, True),
+         T("\nReported per codec and per corpus. Never averaged together.")],
         color=BLUE, wash=WASH_B)
+
+notes(s, """
+Short slide, but it is the one that protects you in questions. If someone asks "what EER are you
+targeting", this is the answer.
+
+Train: ASVspoof 2019 LA, clean, 25,380 utterances, with our augmentation stack on top. We hold out
+one attack family so unseen-attack performance is measured before we ever touch another corpus.
+
+Test, and each isolates a different shift:
+- ASVspoof 2021 LA isolates the CHANNEL. Real VoIP and PSTN transmission, seven codec conditions,
+  25,938 trials each, perfectly balanced, and the codec is labelled per trial so we do not have to
+  simulate anything.
+- In-the-Wild isolates the CORPUS. New speakers, new attacks, different recording provenance,
+  31,779 clips. The hardest published case.
+
+The metric: gap equals out-of-domain EER minus in-domain EER. A detector at 1% and 37% has a
+36-point gap. We report in-domain, out-of-domain and the gap, per condition, never pooled, and we
+optimise the gap rather than the headline number.
+
+Why never pooled: averaging hides exactly the effect we are trying to reduce.
+""")
 
 
 # ============================================================ 9. DEPLOYMENT
@@ -477,27 +599,45 @@ s = slide()
 eyebrow(s, "Act 4", "Where it runs")
 title(s, [("An app on the callee's phone.", INK)])
 
-tf, _ = panel(s, M, 2.35, hw, 2.30, tag="What the setting gives us")
-p = para(tf, space_after=10, line=1.3)
-run(p, "A workable budget. ", 13.5, True, INK, BODY)
-run(p, "A person reads the alarm and needs seconds to react, not 200 milliseconds.", 13.5, False, INK2, BODY)
-p = para(tf, space_after=0, line=1.3)
-run(p, "False alarms cost more than misses. ", 13.5, True, INK, BODY)
-run(p, "An app that cries wolf gets deleted. That sets where we sit on the curve.", 13.5, False, INK2, BODY)
+tf, _ = panel(s, M, 2.50, hw, 2.10, tag="What the setting gives us")
+p = para(tf, space_after=13, line=1.32)
+run(p, "Seconds, not milliseconds.", 16, True, INK, BODY)
+p = para(tf, space_after=0, line=1.32)
+run(p, "False alarms cost more than misses.", 16, True, INK, BODY)
 
-tf, _ = panel(s, M + hw + 0.34, 2.35, hw, 2.30, tag="What we must not hide", tagcol=RED, border=RED)
-p = para(tf, space_after=10, line=1.3)
-run(p, "Android will not hand call audio to a third-party app. ", 13.5, True, INK, BODY)
-run(p, "VOICE_CALL has needed privileged access since Android 10. iOS is closed.", 13.5, False, INK2, BODY)
-p = para(tf, space_after=0, line=1.3)
-run(p, "So we capture through the speaker and the microphone. That adds a room to the signal: ", 13.5, False, INK2, BODY)
-run(p, "4.7% to 18.2%", 13.5, True, RED, MONO)
-run(p, " EER under replay.", 13.5, False, INK2, BODY)
+tf, _ = panel(s, M + hw + 0.34, 2.50, hw, 2.10, tag="What we must not hide", tagcol=RED, border=RED)
+p = para(tf, space_after=13, line=1.32)
+run(p, "Android will not give us the call audio.", 16, True, INK, BODY)
+p = para(tf, space_after=0, line=1.32)
+run(p, "So we capture through the room: ", 16, False, INK2, BODY)
+run(p, "4.7% to 18.2%", 16, True, RED, MONO)
 
-callout(s, M, 4.90, W - 2 * M, 1.42, "So we train against it too",
-        [T("Re-capture is a third shift, next to corpus and channel, and it is the one a real deployment forces on us. "),
-         T("It goes in the augmentation stack, not the limitations section.", BLUE, True)],
+callout(s, M, 4.95, W - 2 * M, 1.30, "So we train against it too",
+        [T("Re-capture is a third shift, and it is the one a real deployment forces on us.")],
         color=BLUE, wash=WASH_B)
+
+notes(s, """
+Say the good part briefly, then spend the time on the honest part. Volunteering the weakness here
+buys real credit with a panel.
+
+The good part. A human reads the alarm and needs seconds to react, so our latency budget is
+seconds, not the 200 ms an authentication gate would need. And the cost asymmetry is clear: an app
+that cries wolf gets deleted, so false alarms cost more than misses. That decides where we sit on
+the operating curve, which is why EER alone is not our target.
+
+The honest part, and say it before they ask. Android has required privileged access for the
+VOICE_CALL audio source since Android 10, so a third-party app cannot record the downlink. iOS is
+closed outright. The realistic capture path is speakerphone into the microphone, which puts a room
+between the caller and our model.
+
+That costs real accuracy and it is measured: ReplayDF, Interspeech 2025. W2V2-AASIST goes from
+4.7% to 18.2% EER under replay, and is still at 11.0% after retraining with room impulse responses.
+
+Our position: re-capture is simply a third distribution shift alongside corpus and channel, and it
+is the one an actual deployment forces on us. So it goes in the augmentation stack, not the
+limitations section. No published number accounts for it, which is what makes measuring it worth
+doing.
+""")
 
 
 # ============================================================ 10. REAL-TIME
@@ -505,32 +645,49 @@ s = slide()
 eyebrow(s, "Act 4", "Deciding during the call")
 title(s, [("One window is not a decision.", INK)])
 
-callout(s, M, 2.30, W - 2 * M, 1.15, "The trap",
-        [T("Alarm whenever one window crosses a threshold, at 5% per window and 2-second windows, and a "),
-         T("60-second call false-alarms 79% of the time", RED, True),
-         T(". Per-window error is the wrong number to report.")])
+callout(s, M, 2.50, W - 2 * M, 1.25, "The trap",
+        [T("5% error per window, 2-second windows, and a 60-second call false-alarms "),
+         T("79% of the time", RED, True), T(".")])
 
-tf, _ = panel(s, M, 3.72, hw, 2.45, tag="How we decide", tagcol=AMBER, border=AMBER)
-p = para(tf, space_after=9, line=1.15)
-run(p, "Add the evidence up", 17, True, INK, DISP)
-p = para(tf, space_after=9, line=1.3)
-run(p, "Accumulate a likelihood ratio across windows and alarm when it crosses a boundary. Wald's sequential "
-       "test, with separate raise and clear thresholds and a three-second floor.", 12.5, False, INK2, BODY)
-p = para(tf, space_after=0, line=1.3)
-run(p, "The decision arrives as soon as the evidence is enough, which is what real-time means here.", 12.5, True, INK, BODY)
+tf, _ = panel(s, M, 4.05, hw, 2.10, tag="How we decide", tagcol=AMBER, border=AMBER)
+p = para(tf, space_after=12, line=1.15)
+run(p, "Add the evidence up", 19, True, INK, DISP)
+p = para(tf, space_after=0, line=1.32)
+run(p, "Alarm when the total crosses a boundary, not when one window does.", 15, False, INK2, BODY)
 
-tf, _ = panel(s, M + hw + 0.34, 3.72, hw, 2.45, tag="What we report")
-p = para(tf, space_after=9, line=1.15)
-run(p, "Three numbers, always together", 17, True, INK, DISP)
-p = para(tf, space_after=7, line=1.3)
-run(p, "False alarms per call-minute", 12.5, True, INK, BODY)
-run(p, ", which is the unit that exposes the trap above.", 12.5, False, INK2, BODY)
-p = para(tf, space_after=7, line=1.3)
-run(p, "Detection rate", 12.5, True, INK, BODY)
-run(p, " at that operating point.", 12.5, False, INK2, BODY)
-p = para(tf, space_after=0, line=1.3)
-run(p, "Time to detection", 12.5, True, INK, BODY)
-run(p, ", and milliseconds per window on the phone.", 12.5, False, INK2, BODY)
+tf, _ = panel(s, M + hw + 0.34, 4.05, hw, 2.10, tag="What we report")
+p = para(tf, space_after=12, line=1.15)
+run(p, "Per call-minute", 19, True, INK, DISP)
+p = para(tf, space_after=0, line=1.32)
+run(p, "False alarms, detection rate, time to detection.", 15, False, INK2, BODY)
+
+notes(s, """
+The trap first, and do the arithmetic out loud. It is the most convincing thing on the slide.
+
+If you alarm whenever any single window crosses a threshold, and your per-window false-alarm rate
+is 5%, and you use 2-second windows, then a 60-second call has 30 windows. One minus 0.95 to the
+30th is 79%. Four calls in five raise a false alarm. The app is uninstalled by lunchtime.
+
+That is why per-window error rate is the wrong number to report and why we report false alarms
+PER CALL-MINUTE instead.
+
+How we decide: accumulate a calibrated log-likelihood ratio across windows and alarm when the
+running total crosses a boundary. This is Wald's sequential probability ratio test. We add
+separate raise and clear thresholds for hysteresis, and a three-second evidence floor so it
+cannot fire on the first syllable.
+
+Why SPRT specifically: it is the classical optimum for "decide as soon as the evidence is
+sufficient", so the time-to-decision versus error-rate tradeoff falls out of it directly. We
+inherit the metric from sequential detection theory instead of inventing one. We compare against
+a plain k-of-n consecutive-window rule as a baseline.
+
+Three reported quantities, always together: false alarms per call-minute, detection rate at that
+operating point, and time to detection at median and 90th percentile. Plus milliseconds per window
+on the actual phone.
+
+Honest caveat if asked: adjacent windows are correlated, which violates the independence
+assumption. We calibrate an effective sample size empirically rather than pretending it holds.
+""")
 
 
 # ============================================================ 11. PIPELINE
@@ -538,48 +695,123 @@ s = slide()
 eyebrow(s, "Act 4", "The system")
 title(s, [("What we will build.", INK)])
 
-nodes = [("Train", "ASVspoof 2019 LA, clean", False),
-         ("Ours", "Augmentation: codec, silence, noise, room, re-capture", True),
+nodes = [("Train", "ASVspoof 2019 LA", False),
+         ("Ours", "Augmentation: codec, silence, room", True),
          ("Front-end", "Raw waveform or CQT", False),
-         ("Detector", "RawNet2, then AASIST, SSL, one-class", True),
-         ("Decision", "Evidence accumulated over windows", True),
-         ("Output", "A risk score, not a verdict", False)]
+         ("Detector", "RawNet2, AASIST, SSL", True),
+         ("Decision", "Evidence over windows", True),
+         ("Output", "A risk score", False)]
 nw, gap = 1.80, 0.20
 total = len(nodes) * nw + (len(nodes) - 1) * gap
 x = (W - total) / 2
 for i, (tag, body, ours) in enumerate(nodes):
     nx = x + i * (nw + gap)
-    rect(s, nx, 2.35, nw, 1.45, fill=WHITE if ours else PANEL,
+    rect(s, nx, 2.70, nw, 1.55, fill=WHITE if ours else PANEL,
          line=AMBER if ours else RGBColor(0xE2, 0xE6, 0xEB), lw=1.5 if ours else 1.0)
-    tf = tb(s, nx + 0.16, 2.51, nw - 0.32, 1.15)
-    p = para(tf, first=True, space_after=6)
-    run(p, tag.upper(), 9, True, AMBER if ours else MUTED, MONO)
-    p = para(tf, space_after=0, line=1.24)
-    run(p, body, 11, False, INK, BODY)
+    tf = tb(s, nx + 0.16, 2.90, nw - 0.32, 1.2)
+    p = para(tf, first=True, space_after=7)
+    run(p, tag.upper(), 9.5, True, AMBER if ours else MUTED, MONO)
+    p = para(tf, space_after=0, line=1.26)
+    run(p, body, 12.5, False, INK, BODY)
     if i < len(nodes) - 1:
-        tf = tb(s, nx + nw, 2.93, gap, 0.3, align=PP_ALIGN.CENTER)
+        tf = tb(s, nx + nw, 3.35, gap, 0.3, align=PP_ALIGN.CENTER)
         p = para(tf, first=True, space_after=0)
-        run(p, "→", 13, False, RULE, BODY)
+        run(p, "→", 14, False, RULE, BODY)
 
-tf, _ = panel(s, M, 4.15, hw, 1.95, tag="What we sweep")
-p = para(tf, space_after=9, line=1.3)
-run(p, "Bandwidth: ", 13, True, INK, BODY)
-run(p, "clean 16k, G.722, Opus, a-law, μ-law, GSM, and ", 13, False, INK2, BODY)
-run(p, "AMR", 13, True, INK, BODY)
-run(p, ", which no ASVspoof edition covers and which is what mobile calls actually use.", 13, False, INK2, BODY)
-p = para(tf, space_after=0, line=1.3)
-run(p, "Window length: ", 13, True, INK, BODY)
-run(p, "full, 4 s, 2 s, 1 s. Accuracy against latency.", 13, False, INK2, BODY)
+tf, _ = panel(s, M, 4.72, hw, 1.82, tag="What we sweep")
+p = para(tf, space_after=0, line=1.34)
+run(p, "Seven codecs plus ", 16, False, INK2, BODY)
+run(p, "AMR", 16, True, INK, BODY)
+run(p, ", which no ASVspoof edition covers.\nWindow length: full, 4 s, 2 s, 1 s.", 16, False, INK2, BODY)
 
-tf, _ = panel(s, M + hw + 0.34, 4.15, hw, 1.95, tag="Never in training")
-p = para(tf, space_after=9, line=1.3)
-run(p, "In-the-Wild, the held-out attack family, and a small probe of modern cloned voices built from our "
-       "own consented recordings.", 13, False, INK2, BODY)
-p = para(tf, space_after=0, line=1.3)
-run(p, "Reported per generator, never pooled.", 13, True, INK, BODY)
+tf, _ = panel(s, M + hw + 0.34, 4.72, hw, 1.82, tag="Never in training")
+p = para(tf, space_after=0, line=1.34)
+run(p, "In-the-Wild, the held-out attacks, and a small probe of modern cloned voices.", 16, False, INK2, BODY)
 
-foot(s, [("Every codec is already in the ffmpeg build on our machine, and 2021 LA ships the codec label per "
-          "trial. The sweep costs us no setup.", MUTED, False)])
+notes(s, """
+Walk left to right once, then stop. The two amber boxes are the parts that are ours.
+
+Train on ASVspoof 2019 LA, clean. Our augmentation stack sits between the data and the model:
+codec chains, silence manipulation, additive noise, room impulse responses, and the speakerphone
+re-capture from the last slide. Front-end is raw waveform or CQT, never mel. Detector starts as
+RawNet2 to establish the baseline, then AASIST, an SSL front-end and a one-class variant for
+comparison. The decision layer accumulates evidence over windows. The output is a risk score that
+feeds a multi-layer decision, not a verdict on its own.
+
+What we sweep: the bandwidth ladder, clean 16k through G.722, Opus, a-law, mu-law, GSM, plus
+AMR-NB and AMR-WB. AMR matters because it is what mobile calls actually use and no ASVspoof
+edition includes it. Window length full, 4 s, 2 s, 1 s, which gives the accuracy-against-latency
+curve.
+
+Held out and never trained on: In-the-Wild, the held-out attack family, and a few hundred modern
+cloned utterances made only from our own consented recordings, reported per generator.
+
+Practical point worth making: every codec is already in the ffmpeg build on our laptop, and
+ASVspoof 2021 ships the codec label per trial, so the sweep costs no setup time. Training fits one
+16 GB laptop GPU at roughly 1.5 to 3 hours per run.
+""")
+
+
+# ============================================================ 12. TIMELINE
+s = slide()
+eyebrow(s, "Act 4", "Plan")
+title(s, [("Twelve weeks.", INK)])
+
+TX0 = M
+TW = (W - 2 * M) / 12.0          # one week
+
+phases = [("Proposal", 1, 1, PANEL, MUTED, ""),
+          ("Baseline", 2, 4, WASH_B, BLUE, "reproduce published EER"),
+          ("Augmentation", 5, 7, AMBER, WHITE, "gap measured per codec"),
+          ("Generalisation", 8, 9, AMBER, WHITE, "gap reduced"),
+          ("Streaming", 10, 11, WASH_B, BLUE, "latency curve"),
+          ("Write-up", 12, 12, PANEL, MUTED, "")]
+
+for name, w0, w1, fill, txt, milestone in phases:
+    x = TX0 + (w0 - 1) * TW
+    wide = (w1 - w0 + 1) * TW
+
+    tf = tb(s, x, 3.28, wide, 0.24, align=PP_ALIGN.CENTER)
+    p = para(tf, first=True, space_after=0)
+    label = "WEEK {}".format(w0) if w0 == w1 else "WEEKS {}-{}".format(w0, w1)
+    run(p, label, 9.5, False, MUTED, MONO)
+
+    rect(s, x + 0.03, 3.60, wide - 0.06, 1.15, fill=fill, line=None)
+    tf = tb(s, x + 0.10, 4.00, wide - 0.20, 0.4, align=PP_ALIGN.CENTER)
+    p = para(tf, first=True, space_after=0)
+    run(p, name, 14.5, True, txt, BODY)
+
+    if milestone:
+        tf = tb(s, x + 0.06, 4.90, wide - 0.12, 0.5, align=PP_ALIGN.CENTER)
+        p = para(tf, first=True, space_after=0, line=1.25)
+        run(p, milestone, 12, False, INK2, BODY)
+
+notes(s, """
+Keep this short, maybe sixty seconds. It exists so the panel knows we have thought about time.
+
+Week 1 is this proposal.
+
+Weeks 2 to 4, baseline. Get RawNet2 training on ASVspoof 2019 LA and reproduce the published
+clean-condition EER. This is not research, it proves our setup is correct. We can validate
+against the official baseline score files that ship with the 2021 keys, so if our number does not
+match, the bug is ours and we find it in week 3 rather than week 10.
+
+Weeks 5 to 7, the augmentation stack. Codec chains, silence manipulation, noise, room impulse
+responses, speakerphone re-capture. Then measure the gap per codec across the bandwidth ladder.
+
+Weeks 8 to 9, the generalisation push. Silence masking, the one-class objective, the SSL
+front-end, compared on the gap rather than on in-domain EER. This is the core contribution.
+
+Weeks 10 to 11, streaming and the modern-attack probe. SPRT decision rule, latency on the device,
+a few hundred cloned utterances from our own consented voices.
+
+Week 12, write-up and defence.
+
+Say the risk out loud: weeks 5 to 9 are where we expect to slip, because building a degradation
+pipeline and chasing generalisation both historically overrun. We are saying it now rather than
+in week 11. Compute is one 16 GB laptop GPU, roughly 1.5 to 3 hours per training run, which
+serialises our experiments and is the main reason the middle phases are the risk.
+""")
 
 
 # ============================================================ 12. SUCCESS
@@ -587,28 +819,51 @@ s = slide()
 eyebrow(s, "Act 4", "Conclusion")
 title(s, [("What success looks like.", INK)])
 
-tf, _ = panel(s, M, 2.35, hw, 2.45, tag="The target", tagcol=BLUE, border=BLUE)
-goals = [("An ", "out-of-domain EER well below the 34 to 37%", " the literature reports on the same held-out data."),
-         ("A gap we ", "reduced and can attribute", ". Which decision bought how much."),
-         ("A decision ", "within seconds of speech", ", on the phone, with the cost of every window length measured.")]
-for a, b, c in goals:
-    p = para(tf, space_after=11, line=1.3)
-    run(p, a, 13.5, False, INK2, BODY); run(p, b, 13.5, True, INK, BODY); run(p, c, 13.5, False, INK2, BODY)
+tf, _ = panel(s, M, 2.50, hw, 2.30, tag="The target", tagcol=BLUE, border=BLUE)
+for a, b in [("Out-of-domain EER ", "well below 34%."),
+             ("A gap we ", "reduced, and can explain."),
+             ("A decision ", "in seconds, on the phone.")]:
+    p = para(tf, space_after=14, line=1.3)
+    run(p, a, 16, False, INK2, BODY); run(p, b, 16, True, INK, BODY)
 
-tf, _ = panel(s, M + hw + 0.34, 2.35, hw, 2.45, tag="What we will not do")
-for t in ["Quote one in-domain number as if it described the field.",
-          "Average across corpora or codecs to make a result look better.",
-          "Say the problem is solved. A smaller gap is not a closed gap."]:
-    p = para(tf, space_after=11, line=1.3)
-    run(p, t, 13.5, False, INK2, BODY)
+tf, _ = panel(s, M + hw + 0.34, 2.50, hw, 2.30, tag="What we will not do")
+for t in ["Quote one in-domain number.",
+          "Average across corpora or codecs.",
+          "Say the problem is solved."]:
+    p = para(tf, space_after=14, line=1.3)
+    run(p, t, 16, False, INK2, BODY)
 
-callout(s, M, 5.05, W - 2 * M, 1.35, "The position we will defend",
-        [T("A detector that travels is worth more than a detector that scores well. "),
-         T("We are optimising the number that survives a change of dataset.", BLUE, True)],
+callout(s, M, 5.15, W - 2 * M, 1.20, "The position we will defend",
+        [T("A detector that travels is worth more than a detector that scores well.", BLUE, True)],
         color=BLUE, wash=WASH_B)
+
+notes(s, """
+Close on the claim, not on a summary. Say it as a position you are prepared to argue.
+
+The target, concretely:
+- An out-of-domain EER well below the 34 to 37% the literature reports on the same held-out data.
+  That is the number we will be judged on.
+- A generalisation gap we reduced AND can attribute, so we can say which design decision bought
+  how much. An ablation, not a single result.
+- A decision within seconds of speech, running on the phone, with the latency cost of every window
+  length measured.
+
+What we will not do, and say this deliberately because the panel will respect it:
+- Quote one in-domain EER as if it described field performance.
+- Average across corpora or codecs to make a result look better than it is.
+- Claim the problem is solved. A smaller gap is not a closed gap.
+
+Final line: a detector that travels is worth more than a detector that scores well. We are
+optimising the number that survives a change of dataset.
+
+If pushed on "will it work in production": it is a risk signal with a measured error rate, fused
+with caller-ID checks, account context and challenge-response. It raises attacker cost. It does
+not authenticate anyone on its own. That is also the framing of the assigned Ige et al. reading on
+multi-layer defence.
+""")
 
 
 import sys
 out = sys.argv[1] if len(sys.argv) > 1 else "proposal.pptx"
 prs.save(out)
-print("saved", out, "12 slides")
+print("saved", out, "12 slides with speaker notes")
