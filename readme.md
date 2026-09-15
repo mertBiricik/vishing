@@ -18,8 +18,9 @@ Problem: Presentation Attack Detection (PAD) for audio, under two constraints th
 - [docs/literature.md](docs/literature.md) - source matrix and per-paper notes
 - [docs/features.md](docs/features.md) - what discriminates synthetic speech, and what survives a phone line
 - [docs/attack-side.md](docs/attack-side.md) - should we build the attack side? evidence and decision
-- **[slides/proposal.pptx](slides/proposal.pptx)** - the proposal deck, editable PowerPoint (12 slides, native shapes)
-- **[slides/proposal.pdf](slides/proposal.pdf)** - same deck as PDF, for handing in
+- **[slides/anti_vishing_proposal.pptx](slides/anti_vishing_proposal.pptx)** - the deck we are presenting: teammate's design, with our evidence slides merged in (13 slides)
+- [slides/proposal.pptx](slides/proposal.pptx) - our earlier deck, kept as a source of material
+- **[slides/anti_vishing_proposal.pdf](slides/anti_vishing_proposal.pdf)** - same, as PDF
 - [slides/proposal.html](slides/proposal.html) - web version ([live](https://claude.ai/code/artifact/8617113b-c43d-4fc1-8e10-ead79f141e3c))
 - [slides/build_deck.py](slides/build_deck.py) - regenerates the pptx; edit and re-run if you'd rather change content in code
 - [docs/presentation-plan.md](docs/presentation-plan.md) - proposal presentation: narrative, slides, group meeting agenda
